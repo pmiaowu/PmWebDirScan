@@ -240,7 +240,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--scan_file_url', dest = 'scan_file_url', help = '载入要扫描的url列表txt文件(每个域名换行-文件保存至domain目录)', type = str)
     parser.add_argument('-d', '--dict', dest = 'dict', help = '提供扫描的字典位置(多个文件请使用`,`分割)', type = str, default = '专业备份扫描.txt')
     parser.add_argument('-o', '--output', dest = 'output', help = '结果输出位置', type = str)
-    parser.add_argument('-t', '--thread', dest = 'thread', help = '运行程序的线程数量', type = int, default = 500)
+    parser.add_argument('-t', '--thread', dest = 'thread', help = '运行程序的线程数量', type = int, default = 50)
     parser.add_argument('--timeout', dest = 'timeout', help = '超时时间', type = int, default = 2)
     parser.add_argument('--http_status_code', dest = 'http_status_code', help = '代表扫描成功的http状态码', type = str, default = '200,403')
     args = parser.parse_args()
