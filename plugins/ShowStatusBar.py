@@ -28,7 +28,7 @@ class ShowStatusBar():
 
         # 进度条打印
         try:
-            result = '\r%s%d%%-%d/%d\r' % (progress_bar_number, percentage, now_number, total)
+            result = '\r%s%d%%(%d/%d)\r' % (progress_bar_number, percentage, now_number, total)
             if percentage >= 100:
                 result += '\n'
             sys.stdout.write(result)
