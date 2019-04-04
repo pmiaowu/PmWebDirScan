@@ -10,7 +10,7 @@
 
 ```
 $ git clone https://github.com/phpooop/PmWebDirScan.git
-$ pip install requests
+$ pip3 install requests
 ```
 
 安装完成。
