@@ -56,7 +56,7 @@ $ python3 PmWebDirScan.py -u "baidu.com" -d 专业备份扫描.txt
 ```
 $ python3 PmWebDirScan.py -f domain_test.txt -d 专业备份扫描.txt
 ```
-排量扫描文件请至到`domain`目录
+排量扫描文件请放到`domain`目录
 
 ## 批量扫描某域名多个字典
 
