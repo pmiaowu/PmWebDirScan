@@ -95,7 +95,9 @@ $ python3 PmWebDirScan.py -u baidu.com --timeout 5
 
 # 运行例子
 
-![运行过程例子](./run.png)
+![运行过程例子1](./run.png)
+
+![运行过程例子2](./run2.png)
 
 # 关于我
 
