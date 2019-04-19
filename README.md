@@ -93,6 +93,10 @@ $ python3 PmWebDirScan.py -u baidu.com --timeout 5
 ```
 修改以后URL发送超过5秒,将认为超时不存在  默认超时时间为2秒
 
+# 运行例子
+
+![运行过程例子](./run.png)
+
 # 关于我
 
 * Author:P喵呜-phpoop
