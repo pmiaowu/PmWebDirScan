@@ -27,7 +27,6 @@ class PmWebDirScan():
         self.timeout = timeout
         self.http_status_code = http_status_code
         self._loadUrl(url, scan_file_url)
-        self._output = output
         self._outputAddress(output)
         self._loadDict(scan_dict)
         self._loadHeaders()
@@ -182,15 +181,14 @@ class PmWebDirScan():
                 url_result = requests.get(host + '/china/hello404.html', headers = self.headers, allow_redirects = False, timeout = self.timeout)
                 page404[host] = url_result.text
             except requests.exceptions.ConnectionError:
-                page404[host] = 'error'
-                print('%s域名: 请求404页面超时,可能影响最终结果' % host)
+                page404[host] = 'connection_error'
+                print('%s域名: 404页面连接错误' % host)
             except requests.exceptions.ReadTimeout:
-                page404[host] = 'error'
-                pass
+                page404[host] = 'read_timeout_error'
+                print('%s域名: 404页面连接超时错误' % host)
             except:
-                page404[host] = 'error'
-                pass
-                # print('捕获到了一个未知错误')
+                page404[host] = '404_error'
+                print('%s域名: 404页面获取时未知错误' % host)
         self.page404 = page404
         print('目标404页面完成.')
         print(' ')
@@ -201,19 +199,21 @@ class PmWebDirScan():
         try:
             html_result = requests.get(data['host'] + data['dict'], headers = self.headers, allow_redirects = False, timeout = self.timeout)
             if html_result != '':
+
                 if self.http_status_code.find(str(html_result.status_code)) != -1 and html_result.text != self.page404[data['host']]:
                     print('[%i]%s' % (html_result.status_code, html_result.url))
                     
                     result = {}
                     result['status_code'] = html_result.status_code
                     result['url'] = html_result.url
-
-                    if not self._output is None:
+                    
+                    if data['host'] not in self.file_output:
                         address = self.file_output
                     else:
                         address = self.file_output[data['host']]
 
                     self._writeOutput(address, result)
+
         except requests.exceptions.ConnectionError:
             # print('请求超时: %s' % data['host'] + data['dict'])
             pass
