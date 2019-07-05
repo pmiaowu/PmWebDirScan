@@ -153,8 +153,20 @@ class PmWebDirScan():
                     if line.startswith('#') == False:
                         # 字典入队
                         data = {}
+
+                        host = list(host)
+                        if host[-1] == '/':
+                            host.pop()
+                        host = ''.join(host)
+
+                        scan_dict = line.strip()
+                        scan_dict = list(scan_dict)
+                        if scan_dict[0] != '/':
+                            scan_dict.insert(0,'/')
+                        scan_dict = ''.join(scan_dict)
+
                         data['host'] = host
-                        data['dict'] = line.strip()
+                        data['dict'] = scan_dict
                         self.q.put(data)
                 # print('字典加载位置: %s' % dict_path)
                 # print('字典加载完成.')
