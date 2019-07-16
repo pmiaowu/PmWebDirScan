@@ -161,6 +161,8 @@ class PmWebDirScan():
 
                         scan_dict = line.strip()
                         scan_dict = list(scan_dict)
+                        if len(scan_dict) <= 0:
+                            continue
                         if scan_dict[0] != '/':
                             scan_dict.insert(0,'/')
                         scan_dict = ''.join(scan_dict)
@@ -194,13 +196,13 @@ class PmWebDirScan():
                 page404[host] = url_result.text
             except requests.exceptions.ConnectionError:
                 page404[host] = 'connection_error'
-                print('%s域名: 404页面连接错误' % host)
+                print('%s域名 404页面连接错误' % host)
             except requests.exceptions.ReadTimeout:
                 page404[host] = 'read_timeout_error'
-                print('%s域名: 404页面连接超时错误' % host)
+                print('%s域名 404页面连接超时错误' % host)
             except:
                 page404[host] = '404_error'
-                print('%s域名: 404页面获取时未知错误' % host)
+                print('%s域名 404页面获取时未知错误' % host)
         self.page404 = page404
         print('目标404页面完成.')
         print(' ')
