@@ -43,7 +43,7 @@ class PmWebDirScan():
         else:
             print('对不起,扫描域名不能为空')
             exit()
-        self.scan_site = scan_site
+        self.scan_site = self.formattingHost(scan_site)
         print('url加载地址: %s' % self.scan_site)
         print('url加载完成.')
         print(' ')
@@ -154,11 +154,6 @@ class PmWebDirScan():
                         # 字典入队
                         data = {}
 
-                        host = list(host)
-                        if host[-1] == '/':
-                            host.pop()
-                        host = ''.join(host)
-
                         scan_dict = line.strip()
                         scan_dict = list(scan_dict)
                         if len(scan_dict) <= 0:
@@ -213,7 +208,6 @@ class PmWebDirScan():
         try:
             html_result = requests.get(data['host'] + data['dict'], headers = self.headers, allow_redirects = False, timeout = self.timeout)
             if html_result != '':
-
                 if self.http_status_code.find(str(html_result.status_code)) != -1 and html_result.text != self.page404[data['host']]:
                     print('[%i]%s' % (html_result.status_code, html_result.url))
                     
@@ -233,12 +227,21 @@ class PmWebDirScan():
             pass
         except requests.exceptions.ReadTimeout:
             pass
-        except:
-            print('捕获到了一个未知错误,可能导致结果保存不成功')
 
         # 进度条
         self.queue_progress+=1
         ShowStatusBar().run(self.queue_progress, self.queue_total_size)
+
+    # 主机头格式化
+    def formattingHost(self, scan_site):
+        host_list = []
+        for host in scan_site:
+            host = list(host)
+            if host[-1] == '/':
+                host.pop()
+            host = ''.join(host)
+            host_list.append(host)
+        return host_list
 
     # 数据写入
     def _writeOutput(self, address, data):
