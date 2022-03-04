@@ -3,14 +3,23 @@
 
 __author__ = 'P喵呜-phpoop'
 
-import requests
+import urllib.request
 import threading
+import ssl
 import os
 import re
 import argparse
 import time
 import queue
+import diffPage
 from plugins.ShowStatusBar import ShowStatusBar
+
+ssl._create_default_https_context = ssl._create_unverified_context
+
+class NoRedirHandler(urllib.request.HTTPRedirectHandler):
+    def http_error_302(self, req, fp, code, msg, headers):
+        return fp
+    http_error_301 = http_error_302
 
 class PmWebDirScan():
     def __init__(self, url, scan_file_url, scan_dict, output, timeout, http_status_code):
@@ -31,7 +40,6 @@ class PmWebDirScan():
         self._loadDict(scan_dict)
         self._loadHeaders()
         self._analysis404()
-        
 
     # url加载
     def _loadUrl(self, url, scan_file_url):
@@ -165,8 +173,7 @@ class PmWebDirScan():
                         data['host'] = host
                         data['dict'] = scan_dict
                         self.q.put(data)
-                # print('字典加载位置: %s' % dict_path)
-                # print('字典加载完成.')
+                print('字典加载位置: %s' % dict_path)
             f.close()
         print('字典加载完成.')
         print(' ')
@@ -187,14 +194,18 @@ class PmWebDirScan():
         page404 = {}
         for host in self.scan_site:
             try:
-                url_result = requests.get(host + '/china/hello404.html', headers = self.headers, allow_redirects = False, timeout = self.timeout)
-                page404[host] = url_result.text
-            except requests.exceptions.ConnectionError:
-                page404[host] = 'connection_error'
-                print('%s域名 404页面连接错误' % host)
-            except requests.exceptions.ReadTimeout:
-                page404[host] = 'read_timeout_error'
-                print('%s域名 404页面连接超时错误' % host)
+                opener = urllib.request.build_opener(NoRedirHandler)
+                req = urllib.request.Request(url = host + '/china/hello404', headers = self.headers)
+                response = opener.open(req, timeout = self.timeout)
+                content = response.read().decode('utf-8')
+                page404[host] = content
+            except urllib.error.HTTPError as err:
+                try:
+                    page404[host] = err.read().decode('utf-8')
+                except UnicodeDecodeError as err:
+                    page404[host] = err.read().decode('gbk')
+            except UnicodeDecodeError as erra:
+                page404[host] = err.read().decode('gbk')
             except:
                 page404[host] = '404_error'
                 print('%s域名 404页面获取时未知错误' % host)
@@ -206,26 +217,36 @@ class PmWebDirScan():
     def _scan(self, data):
         html_result = ''
         try:
-            html_result = requests.get(data['host'] + data['dict'], headers = self.headers, allow_redirects = False, timeout = self.timeout)
+            opener = urllib.request.build_opener(NoRedirHandler)
+            req = urllib.request.Request(url = data['host'] + data['dict'], headers = self.headers)
+            response = opener.open(req, timeout = self.timeout)
+            try:
+                html_result = response.read().decode('utf-8')
+            except urllib.error.HTTPError as err:
+                try:
+                    html_result = response.read().decode('utf-8')
+                except UnicodeDecodeError as err:
+                    html_result = response.read().decode('gbk')
+            except UnicodeDecodeError as err:
+                html_result = response.read().decode('gbk')
+
             if html_result != '':
-                if self.http_status_code.find(str(html_result.status_code)) != -1 and html_result.text != self.page404[data['host']]:
-                    print('[%i]%s' % (html_result.status_code, html_result.url))
-                    
-                    result = {}
-                    result['status_code'] = html_result.status_code
-                    result['url'] = html_result.url
-                    
-                    if data['host'] not in self.file_output:
-                        address = self.file_output
-                    else:
-                        address = self.file_output[data['host']]
+                html_similarity_ratio = diffPage.get_ratio(html_result, self.page404[data['host']])
+                if html_similarity_ratio <= 0.6:
+                    if self.http_status_code.find(str(response.getcode())) != -1:
+                        print('[%i]%s' % (response.getcode(), data['host'] + data['dict']))
 
-                    self._writeOutput(address, result)
+                        result = {}
+                        result['status_code'] = response.getcode()
+                        result['url'] = data['host'] + data['dict']
+                        
+                        if data['host'] not in self.file_output:
+                            address = self.file_output
+                        else:
+                            address = self.file_output[data['host']]
 
-        except requests.exceptions.ConnectionError:
-            # print('请求超时: %s' % data['host'] + data['dict'])
-            pass
-        except requests.exceptions.ReadTimeout:
+                        self._writeOutput(address, result)
+        except:
             pass
 
         # 进度条
