@@ -173,7 +173,6 @@ class PmWebDirScan():
                         data['host'] = host
                         data['dict'] = scan_dict
                         self.q.put(data)
-                print('字典加载位置: %s' % dict_path)
             f.close()
         print('字典加载完成.')
         print(' ')
