@@ -238,10 +238,15 @@ class PmWebDirScan():
             if html_result != '':
                 html_similarity_ratio = diffPage.get_ratio(html_result, self.page404[data['host']])
                 if html_similarity_ratio <= 0.6:
+                    content_length = response.info()['Content-Length'].strip()
+                    if len(content_length) == 0:
+                        content_length = len(html_result)
+                        
                     if self.http_status_code.find(str(response.getcode())) != -1:
-                        print('[%i]%s' % (response.getcode(), data['host'] + data['dict']))
+                        print('[status_code: %i][content_length: %s]%s' % (response.getcode(), content_length, data['host'] + data['dict']))
 
                         result = {}
+                        result['content_length'] = content_length
                         result['status_code'] = response.getcode()
                         result['url'] = data['host'] + data['dict']
                         
@@ -272,7 +277,7 @@ class PmWebDirScan():
     # 数据写入
     def _writeOutput(self, address, data):
         f = open(address, 'a+')
-        f.write('<a href="' + data['url'] + '" target="_blank">' + '[' + str(data['status_code']) + '] ' + data['url'] + '</a>')
+        f.write('<a href="' + data['url'] + '" target="_blank">' + '[status_code: ' + str(data['status_code']) + '] ' + '[content_length: ' + data['content_length'] + ']' + data['url'] + '</a>')
         f.write('\r\n</br>')
         f.close()
 
