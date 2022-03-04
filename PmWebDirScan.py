@@ -196,15 +196,19 @@ class PmWebDirScan():
                 opener = urllib.request.build_opener(NoRedirHandler)
                 req = urllib.request.Request(url = host + '/china/hello404', headers = self.headers)
                 response = opener.open(req, timeout = self.timeout)
-                content = response.read().decode('utf-8')
+                r = response.read()
+                content = r.decode('utf-8')
                 page404[host] = content
-            except urllib.error.HTTPError as err:
+            except urllib.error.HTTPError as e1:
+                r = e1.read()
                 try:
-                    page404[host] = err.read().decode('utf-8')
-                except UnicodeDecodeError as err:
-                    page404[host] = err.read().decode('gbk')
-            except UnicodeDecodeError as erra:
-                page404[host] = err.read().decode('gbk')
+                    page404[host] = r.decode('utf-8')
+                except UnicodeDecodeError as e2:
+                    page404[host] = r.decode('gbk')
+            except UnicodeDecodeError as e3:
+                page404[host] = r.decode('gbk')
+            except urllib.error.URLError as e4:
+                print('%s域名 404页面访问超时' % host)
             except:
                 page404[host] = '404_error'
                 print('%s域名 404页面获取时未知错误' % host)
@@ -216,18 +220,20 @@ class PmWebDirScan():
     def _scan(self, data):
         html_result = ''
         try:
-            opener = urllib.request.build_opener(NoRedirHandler)
-            req = urllib.request.Request(url = data['host'] + data['dict'], headers = self.headers)
-            response = opener.open(req, timeout = self.timeout)
             try:
-                html_result = response.read().decode('utf-8')
-            except urllib.error.HTTPError as err:
+                opener = urllib.request.build_opener(NoRedirHandler)
+                req = urllib.request.Request(url = data['host'] + data['dict'], headers = self.headers)
+                response = opener.open(req, timeout = self.timeout)
+                r = response.read()
+                html_result = r.decode('utf-8')
+            except urllib.error.HTTPError as e1:
+                r = e1.read()
                 try:
-                    html_result = response.read().decode('utf-8')
-                except UnicodeDecodeError as err:
-                    html_result = response.read().decode('gbk')
-            except UnicodeDecodeError as err:
-                html_result = response.read().decode('gbk')
+                    html_result = r.decode('utf-8')
+                except UnicodeDecodeError as d2:
+                    html_result = r.decode('gbk')
+            except UnicodeDecodeError as d3:
+                html_result = r.decode('gbk')
 
             if html_result != '':
                 html_similarity_ratio = diffPage.get_ratio(html_result, self.page404[data['host']])
